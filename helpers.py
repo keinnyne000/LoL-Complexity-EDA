@@ -5,7 +5,7 @@ ACCESS_POINT = "https://americas.api.riotgames.com"
 #----------------------------------------------------------------------------------------------------
 
 def parse_match_data(match_data):
-    return match_data #TODO
+    return match_data['info']['participants']
 
 def write_json(json, filename):
     with open(filename, 'w') as f:
