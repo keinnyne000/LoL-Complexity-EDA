@@ -35,13 +35,15 @@ async def limited_get(session, url):
         return await response.json()
 
 async def rate_limiter():
-    while True:
-        await asyncio.sleep(1)
-        for _ in range(MAX_CALLS_PER_SECOND):
-            second_semaphore.release()
-        await asyncio.sleep(119)
-        for _ in range(MAX_CALLS_PER_TWO_MINUTES - MAX_CALLS_PER_SECOND):
-            two_minute_semaphore.release()
+    async def refill(semaphore, max_tokens, interval):
+        while True:
+            await asyncio.sleep(interval)
+            if(semaphore._value < max_tokens):
+                for _ in range(max_tokens - semaphore._value):
+                    semaphore.release()
+
+    asyncio.create_task(refill(second_semaphore, MAX_CALLS_PER_SECOND, 1))
+    asyncio.create_task(refill(two_minute_semaphore, MAX_CALLS_PER_TWO_MINUTES, 120))
     
 async def async_get_league_page(session, tier, division, page, api_key):
     # tier: IRON, BRONZE, SILVER, GOLD, PLATINUM, DIAMOND, MASTER, GRANDMASTER, CHALLENGER
