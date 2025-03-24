@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
-import requests
 import matplotlib.pyplot as plt
 import asyncio
 import aiohttp
 from tqdm.asyncio import tqdm_asyncio
+
+from helpers import write_json, parse_match_data
 
 ACCESS_POINT = "https://americas.api.riotgames.com"
 MAX_CALLS_PER_SECOND = 20
@@ -67,11 +68,12 @@ async def async_get_league_data(tier, division, page, depth, api_key):
         async def handle_player(player):
             puuid = player['puuid']
             match_ids = await async_get_matches(session, puuid, api_key, count = depth)
-            tasks = [api_get_match_data(session, match_id, api_key) for match_id in match_ids]
+            tasks = [async_get_match_data(session, match_id, api_key) for match_id in match_ids]
             results = await asyncio.gather(*tasks)
             return [parse_match_data(match) for match in results]
                 
-        tasks = [handle_player(player) for player in league_data['entries']]
+        tasks = [handle_player(player) for player in league_data]
+
         #results = await asyncio.gather(*tasks)
         results = await tqdm_asyncio.gather(*tasks, desc="Processing Players")
 
@@ -79,49 +81,6 @@ async def async_get_league_data(tier, division, page, depth, api_key):
             match_data.extend(result)
         
         return match_data
-
-#---------------------------------------------------------------------------------------------
-
-# gets all the parsed match data on a page of a division tier page
-def get_tier_page_data(tier, division, page, api_key):
-    league_data = api_get_league_page(tier, division, page, api_key)
-    match_data = []
-    for player in league_data['entries']:
-        puuid = player['puuid']
-        match_ids = api_get_matches(puuid, api_key, count = 20)
-        for match_id in match_ids:
-            match_data.append(parse_match_data(api_get_match_data(match_id, api_key)))
-    return match_data 
-
-def api_get_puuid(name, tag, api_key):
-    url = f"{ACCESS_POINT}/riot/account/v1/accounts/by-riot-id/{name}/{tag}?api_key={api_key}"
-    data = request_data(url)
-    return data['puuid']
-
-def api_get_matches(puuid, api_key, count = 100):
-    url = f"{ACCESS_POINT}/lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count={count}&api_key={api_key}"
-    data = request_data(url)
-    return data
-
-def api_get_match_data(match_id, api_key):
-    url = f"{ACCESS_POINT}/lol/match/v5/matches/{match_id}?api_key={api_key}"
-    data = request_data(url)
-    return data
-
-def api_get_league_page(tier, division, page, api_key):
-    # tier: IRON, BRONZE, SILVER, GOLD, PLATINUM, DIAMOND, MASTER, GRANDMASTER, CHALLENGER
-    # division: I, II, III, IV
-    url = f"{ACCESS_POINT}/lol/league/v4/entries/RANKED_SOLO_5x5/{tier}/{division}?page={page}&api_key={api_key}"
-    data = request_data(url)
-    return data
-
-def request_data(url):
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        response.raise_for_status() 
-
 
 #----------------------------------------------------------------------------------------------------
 
