@@ -11,7 +11,7 @@ ACCESS_POINT = "https://americas.api.riotgames.com"
 MAX_CALLS_PER_SECOND = 20
 MAX_CALLS_PER_TWO_MINUTES = 100
 
-API_KEY = "RGAPI-375ff661-5e8d-44fc-9ef1-363025ed838e"
+API_KEY = "RGAPI-2b53bd4d-1b21-42ad-a494-0a7bc2bf7892"
 
 #----------------------------------------------------------------------------------------------------
 
