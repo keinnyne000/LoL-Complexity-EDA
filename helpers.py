@@ -1,4 +1,5 @@
 import requests
+import json
 
 ACCESS_POINT = "https://americas.api.riotgames.com"
 
@@ -7,9 +8,13 @@ ACCESS_POINT = "https://americas.api.riotgames.com"
 def parse_match_data(match_data):
     return match_data['info']['participants']
 
-def write_json(json, filename):
+def write_json_str(json, filename):
     with open(filename, 'w') as f:
         f.write(json)
+
+def write_json_list(json_file, filename):
+    with open(f"{filename}.json", "w", encoding="utf-8") as f:
+        f.write(json.dumps(json_file, indent=2))
 
 #---------------------------------------------------------------------------------------------
 
