@@ -12,7 +12,7 @@ import sys
 from helpers import write_json_list, parse_match_data
 
 ACCESS_POINT = "https://americas.api.riotgames.com"
-API_KEY = "RGAPI-2b53bd4d-1b21-42ad-a494-0a7bc2bf7892"
+API_KEY = "RGAPI-75104283-c3c0-4f11-8431-24d3d7ce4b69"
 
 RATE_LIMIT = 100
 WINDOW = 120  # seconds
@@ -88,7 +88,7 @@ async def async_get_league_data(tier, division, page, depth, api_key):
     async with aiohttp.ClientSession() as session:
         print("[INFO] Fetching league page data...")
         league_data = await async_get_league_page(session, tier, division, page, api_key)
-        print(f"[INFO] Retrieved {len(league_data)} players from league page.")
+        print(f"[INFO] Retrieved {len(league_data)} players from league page.") #205
 
         match_data = []
 
@@ -126,6 +126,16 @@ async def async_get_league_data(tier, division, page, depth, api_key):
 
 
 #----------------------------------------------------------------------------------------------------
+
+async def async_sample_distribution(match_count, distributions, api_key):
+    async with aiohttp.ClientSession() as session:
+        # 205 players per page, go until we've got enough players
+        # process the players
+        # return it all
+        pass
+        
+
+#------------------------------------------------------------------------------------
 
 async def main(file_path, tier, division, page, depth):
     page_data = await async_get_league_data(tier = tier, 
