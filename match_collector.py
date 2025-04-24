@@ -12,6 +12,9 @@ import sys
 from helpers import write_json_list, parse_match_data
 
 ACCESS_POINT = "https://americas.api.riotgames.com"
+
+# Hello! This API key has long expired. Please use your own API key.
+# You can get one from https://developer.riotgames.com/
 API_KEY = "RGAPI-a979a893-3bbd-462c-8ff4-d4cf7daf629c"
 
 RATE_LIMIT = 100
