@@ -12,7 +12,7 @@ import sys
 from helpers import write_json_list, parse_match_data
 
 ACCESS_POINT = "https://americas.api.riotgames.com"
-API_KEY = "RGAPI-fa5c0ab7-2bf3-46b1-88e3-c6ce0355afe6"
+API_KEY = "RGAPI-a979a893-3bbd-462c-8ff4-d4cf7daf629c"
 
 RATE_LIMIT = 100
 WINDOW = 120  # seconds
@@ -26,7 +26,7 @@ request_lock = Lock()
 #----------------------------------------------------------------------------------------------------
 
 def parse_match_data(match_data):
-    return match_data #TODO
+    return match_data
 
 def write_json(json, filename):
     with open(filename, 'w') as f:
@@ -221,14 +221,14 @@ async def get_matches_from_division(session, tier, division, player_count, depth
     start_time = time.time()
     players = await get_players_by_division(session, tier, division, player_count, api_key)
     results = await get_match_data_from_players(session, players, api_key, depth)
-    return await process_data(results, start_time)
+    return process_data(results, start_time)
 
 async def get_matches_from_distribution(session, player_count: int, depth: int, distribution, api_key):
     print(f"[INFO] Starting async_sample_distribution | Player Count: {player_count}, Depth: {depth}")
     start_time = time.time()
     players = await get_players_distribution(session, distribution, player_count, api_key)
     results = await get_match_data_from_players(session, players, api_key, depth)
-    return await process_data(results, start_time)
+    return process_data(results, start_time)
 
 #-----------------------------------------------------------------------------------------------------
 
@@ -246,6 +246,8 @@ def parse_common_args(args):
 
 async def main(args):
     flag = args[-1]
+    print(f"ARGS: {args[4:6]}")
+    print(f"flag: {flag}")
 
     if flag == '-ta':
         print("[INFO] Fetching timeline data for all divisions...")
@@ -256,7 +258,7 @@ async def main(args):
     elif flag == '-tv':
         print("[INFO] Fetching timeline data for a specific division...")
         file_path, count, depth = parse_common_args(args[1:])
-        tier, division = args[3:5]
+        tier, division = args[4:6]
         async with aiohttp.ClientSession() as session:
             result = await get_timelines_from_division(session, tier, division, count, depth, API_KEY)
             write_json_list(result, file_path)
@@ -276,7 +278,7 @@ async def main(args):
     elif flag == '-mv':
         print("[INFO] Fetching match data for a specific division...")
         file_path, count, depth = parse_common_args(args[1:])
-        tier, division = args[3:5]
+        tier, division = args[4:6]
         async with aiohttp.ClientSession() as session:
             result = await get_matches_from_division(session, tier, division, count, depth, API_KEY)
             write_json_list(result, file_path)
@@ -287,6 +289,25 @@ async def main(args):
             distribution = pd.read_json('rank_distribution_32825.json')
             result = await get_matches_from_distribution(session, count, depth, distribution, API_KEY)
             write_json_list(result, file_path)
+    elif flag == '-mad':
+        tier = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']
+        for t in tier:
+            if t == 'MASTER' or t == 'GRANDMASTER' or t == 'CHALLENGER':
+                division = ['I']
+                print(f"[INFO] Fetching match data for {t} {division}...")
+                file_path, count, depth = parse_common_args(args[1:])
+                async with aiohttp.ClientSession() as session:
+                    result = await get_matches_from_division(session, t, division, count, depth, API_KEY)
+                    write_json_list(result, f"{file_path}_{t}_{division}.json")
+            else:
+                division = ['IV', 'III', 'II', 'I']
+                for d in division:
+                    print(f"[INFO] Fetching match data for {t} {d}...")
+                    file_path, count, depth = parse_common_args(args[1:])
+                    async with aiohttp.ClientSession() as session:
+                        result = await get_matches_from_division(session, t, d, count, depth, API_KEY)
+                        write_json_list(result, f"{file_path}_{t}_{d}.json")
+            
     else:
         raise ValueError(f"Unknown flag: {flag}")
 
